@@ -3,6 +3,13 @@
 require_relative '../lib/unicode/display_width/string_ext'
 
 describe 'Unicode::DisplayWidth.of' do
+  it 'forwards positional legacy options from String with the same precedence as .of' do
+    expect( '·'.display_width(nil, nil, { ambiguous: 2 }) ).to eq 2
+    expect( '·'.display_width(nil, nil, { ambiguous: 2 }, ambiguous: 1) ).to eq(
+      Unicode::DisplayWidth.of('·', nil, nil, { ambiguous: 2 }, ambiguous: 1)
+    )
+  end
+
   describe '[east asian width]' do
     it 'returns 2 for F' do
       expect( '！'.display_width ).to eq 2
