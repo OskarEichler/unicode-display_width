@@ -3,6 +3,24 @@
 require_relative '../lib/unicode/display_width/string_ext'
 
 describe 'Unicode::DisplayWidth.of' do
+  describe 'overwrite fast path' do
+    it 'skips custom processing for omitted, nil, false and empty overwrites' do
+      expect(Unicode::DisplayWidth).not_to receive(:width_custom)
+      expect(Unicode::DisplayWidth.of('ABC')).to eq 3
+      [nil, false, {}, double(empty?: true)].each do |overwrite|
+        expect(Unicode::DisplayWidth.of('ABC', overwrite: overwrite)).to eq 3
+      end
+    end
+
+    it 'applies non-empty hashes, procs and lookup objects' do
+      lookup = double(empty?: false)
+      allow(lookup).to receive(:[]).with(65).and_return(4)
+      [{65 => 4}, ->(codepoint) { 4 if codepoint == 65 }, lookup].each do |overwrite|
+        expect(Unicode::DisplayWidth.of('A', overwrite: overwrite)).to eq 4
+      end
+    end
+  end
+
   describe '[east asian width]' do
     it 'returns 2 for F' do
       expect( '！'.display_width ).to eq 2
